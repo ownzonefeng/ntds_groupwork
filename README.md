@@ -1,4 +1,4 @@
-# ntds_groupwork
+# ntds_2018_groupwork
 The milestones and project of ntds 2018 fall Group 5
 
 ## Milestone 1
