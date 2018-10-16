@@ -66,7 +66,9 @@ def compute_adj_matrix():
 
 #########################################################################################################################
 
-def compute_dist_matrix(dist_matrix, adj_matrix, source_node):
+def compute_shortest_path_lengths(dist_matrix, adj_matrix, source_node):
+    adj_matrix[adj_matrix > 1] = 1
+    dist_matrix = np.copy(adj_matrix[source_node, :])
     for i in range(adj_matrix.shape[0]):
         non_zero_idx = np.where(dist_matrix == i + 1)[0]
         next_neighbor = adj_matrix[non_zero_idx, :]
@@ -76,15 +78,25 @@ def compute_dist_matrix(dist_matrix, adj_matrix, source_node):
         if np.where(dist_matrix == 0)[0].shape[0] == 0:
             break
     dist_matrix[source_node] = 0
-    
-    return dist_matrix
+    shortest_path_lengths = list(dist_matrix)
+    return shortest_path_lengths
+
+def compute_diameter(adj_matrix):
+    diameter = -1
+    for i in range(adj_matrix.shape[0]):
+        dist_matrix = np.copy(adj_matrix[i, :])
+        current_max_length = max(compute_shortest_path_lengths(dist_matrix, adj_matrix, i))
+        if current_max_length > diameter:
+            diameter = current_max_length
+    return diameter
     
 
 source_node = 200; # i is between 0 -- (n - 1)
 adj_matrix = compute_adj_matrix()
 adj_matrix[adj_matrix > 1] = 1
 dist_matrix = np.copy(adj_matrix[source_node, :])
-dist_matrix_final = compute_dist_matrix(dist_matrix, adj_matrix, source_node)
+dist_matrix_final = compute_shortest_path_lengths(dist_matrix, adj_matrix, source_node)
+dia = compute_diameter(adj_matrix) #Diameter 14
 
 
 
