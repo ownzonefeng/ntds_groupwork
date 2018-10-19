@@ -8,9 +8,7 @@ Created on Sat Oct 13 14:24:52 2018
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import json as js
-import scipy as scpy
+import time
 
 def compute_adj_matrix():
     routes = pd.read_csv("routes.dat", names = ['Airline', 'Airline_ID', 'S_Port', 'S_ID', 
@@ -66,39 +64,50 @@ def compute_adj_matrix():
 
 #########################################################################################################################
 
-def compute_shortest_path_lengths(dist_matrix, adj_matrix, source_node):
-    adj_matrix[adj_matrix > 1] = 1
+def compute_shortest_path_lengths(adj_matrix, source_node):
     dist_matrix = np.copy(adj_matrix[source_node, :])
+    dist_matrix[source_node] = -1
     for i in range(adj_matrix.shape[0]):
         non_zero_idx = np.where(dist_matrix == i + 1)[0]
+        zero_idx = np.where(dist_matrix == 0)[0]
         next_neighbor = adj_matrix[non_zero_idx, :]
-        next_neighbor = np.sum(next_neighbor, axis = 0)
-        next_neighbor[np.where(next_neighbor > 0)] = 1 * (i + 2)
-        dist_matrix[np.where(dist_matrix == 0)[0]] = next_neighbor[np.where(dist_matrix == 0)[0]]
-        if np.where(dist_matrix == 0)[0].shape[0] == 0:
+        if next_neighbor[:, zero_idx].any() == 0:
             break
+        next_neighbor = np.sum(next_neighbor[:, zero_idx], axis = 0)
+        next_neighbor[np.where(next_neighbor > 0)] = 1 * (i + 2)
+        dist_matrix[zero_idx] = next_neighbor
+    dist_matrix[dist_matrix == 0] = -1 * np.inf
     dist_matrix[source_node] = 0
-    shortest_path_lengths = list(dist_matrix)
-    return shortest_path_lengths
+    #shortest_path_lengths = list(dist_matrix)
+    return list(dist_matrix)
 
 def compute_diameter(adj_matrix):
-    diameter = -1
-    for i in range(adj_matrix.shape[0]):
-        dist_matrix = np.copy(adj_matrix[i, :])
-        current_max_length = max(compute_shortest_path_lengths(dist_matrix, adj_matrix, i))
-        if current_max_length > diameter:
-            diameter = current_max_length
-    return diameter
+    dist_matrix = np.zeros(adj_matrix.shape)
+    for source_node in range(adj_matrix.shape[0]):
+        dist_ = np.c_[dist_matrix[0:source_node + 1, source_node].reshape(1, source_node + 1), adj_matrix[source_node, source_node + 1:].reshape(1, 3286 - source_node)][0]
+        dist_[source_node] = -1
+        for i in range(adj_matrix.shape[0]):
+            non_zero_idx = np.where(dist_ == i + 1)[0]
+            zero_idx = np.where(dist_ == 0)[0]
+            next_neighbor = adj_matrix[non_zero_idx, :]
+            if next_neighbor[:, zero_idx].any() == 0:
+                dist_matrix[source_node,:] = dist_
+                break
+            next_neighbor = np.sum(next_neighbor[:, zero_idx], axis = 0)
+            next_neighbor[np.where(next_neighbor > 0)] = 1 * (i + 2)
+            dist_[zero_idx] = next_neighbor
+    return np.max(dist_matrix)
     
-
-source_node = 200; # i is between 0 -- (n - 1)
+#source_node = 200; # i is between 0 -- (n - 1)
 adj_matrix = compute_adj_matrix()
+adj_matrix - adj_matrix + adj_matrix.T
 adj_matrix[adj_matrix > 1] = 1
-dist_matrix = np.copy(adj_matrix[source_node, :])
-dist_matrix_final = compute_shortest_path_lengths(dist_matrix, adj_matrix, source_node)
+start_time = time.time()
+#dist_matrix_final = shortest_path_accelerated(adj_matrix, source_node)
 dia = compute_diameter(adj_matrix) #Diameter 14
-
-
+elap = time.time() - start_time
+print('Time of running: ', elap,'s; DIA: ', dia, sep = '')
+#original time of running: 148.18129301071167s
 
 
 
