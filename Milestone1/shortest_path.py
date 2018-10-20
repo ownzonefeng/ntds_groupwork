@@ -100,7 +100,7 @@ def compute_diameter(adj_matrix):
     
 #source_node = 200; # i is between 0 -- (n - 1)
 adj_matrix = compute_adj_matrix()
-adj_matrix - adj_matrix + adj_matrix.T
+
 adj_matrix[adj_matrix > 1] = 1
 start_time = time.time()
 #dist_matrix_final = shortest_path_accelerated(adj_matrix, source_node)
