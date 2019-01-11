@@ -106,3 +106,5 @@ venv.bak/
 .DS_Store
 .DS_Store
 .DS_Store
+szd/flights_clean.csv
+*.csv
